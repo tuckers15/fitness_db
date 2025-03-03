@@ -6,6 +6,30 @@ from dotenv import load_dotenv
 # Load environment variables (for security)
 load_dotenv()
 
+def add_exercise(exercise_name):
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    cursor.execute(          
+        "INSERT INTO exercises (name) VALUES (%s)", (exercise_name,)
+    )
+    db.commit()
+    exercise_id = cursor.lastrowid
+    db.close()
+    return exercise_id
+
+def check_exercise_exists(exercise_name):
+    "Check that a exercise exists before inserting"
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    cursor.execute("Select * FROM exercises WHERE name = %s", exercise_name)
+
+    result = cursor.fetchone()
+
+    db.close()
+    return result is not None
+
 def check_user_exists(discord_id):
     """Check if the user already exists in the users table."""
     db = get_db_connection()
@@ -20,17 +44,26 @@ def check_user_exists(discord_id):
     db.close()
     return result is not None
 
-def check_exercise_exists(exercise_name):
-    "Check that a exercise exists before inserting"
+def end_workout(workout_id):
+    "Mark a workout as ended by setting the end_time."
     db = get_db_connection()
     cursor = db.cursor()
-
-    cursor.execute("Select * FROM exercises WHERE name = %s", exercise_name)
-
-    result = cursor.fetchone()
-
+    cursor.execute("UPDATE workouts SET end_time = NOW() WHERE id = %s", (workout_id,))
+    db.commit()
     db.close()
-    return result is not None
+
+
+def get_active_workout(user_db_id):
+    "Retrieve the most recent active workout (no end_time)."
+    db = get_db_connection()
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT id FROM workouts WHERE user_id = %s AND end_time IS NULL ORDER BY start_time DESC LIMIT 1",
+        (user_db_id,)
+    )
+    result = cursor.fetchone()
+    db.close()
+    return result[0] if result else None
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -40,28 +73,6 @@ def get_db_connection():
         database=os.getenv("DB_NAME")
     )
 
-def insert_user(discord_id, discord_user):
-    "Inserting a discord usert into database !join"
-    db = get_db_connection()
-    cursor = db.cursor()
-    cursor.execute(          
-        "INSERT INTO users (discord_id, discord_user) VALUES (%s, %s)", (discord_id, discord_user)
-    )
-    db.commit()
-    user_id = cursor.lastrowid
-    db.close()
-    return user_id
-
-def get_user_id(discord_id):
-    "Retrieving database user id (primary key) from discord id"
-    db = get_db_connection()
-    cursor = db.cursor()
-    cursor.execute(
-        "SELECT id FROM users WHERE discord_id = %s", (discord_id,)
-    )
-    result = cursor.fetchone()
-    db.close()
-    return result[0] if result else None
 
 def get_exercise_id(exercise_name):
     "Getting exercise id"
@@ -77,38 +88,28 @@ def get_exercise_id(exercise_name):
     db.close()
     return result[0] if result else None
 
-def start_workout(user_db_id):
-    "Workout entry"
+def get_user_id(discord_id):
+    "Retrieving database user id (primary key) from discord id"
     db = get_db_connection()
     cursor = db.cursor()
     cursor.execute(
-        "INSERT INTO workouts (user_id, start_time) VALUES (%s, NOW())",
-        (user_db_id,)
-    )
-    db.commit()
-    workout_id = cursor.lastrowid
-    db.close()
-    return workout_id
-
-def get_active_workout(user_db_id):
-    "Retrieve the most recent active workout (no end_time)."
-    db = get_db_connection()
-    cursor = db.cursor()
-    cursor.execute(
-        "SELECT id FROM workouts WHERE user_id = %s AND end_time IS NULL ORDER BY start_time DESC LIMIT 1",
-        (user_db_id,)
+        "SELECT id FROM users WHERE discord_id = %s", (discord_id,)
     )
     result = cursor.fetchone()
     db.close()
     return result[0] if result else None
 
-def end_workout(workout_id):
-    "Mark a workout as ended by setting the end_time."
+def insert_user(discord_id, discord_user):
+    "Inserting a discord usert into database !join"
     db = get_db_connection()
     cursor = db.cursor()
-    cursor.execute("UPDATE workouts SET end_time = NOW() WHERE id = %s", (workout_id,))
+    cursor.execute(          
+        "INSERT INTO users (discord_id, discord_user) VALUES (%s, %s)", (discord_id, discord_user)
+    )
     db.commit()
+    user_id = cursor.lastrowid
     db.close()
+    return user_id
 
 def log_exercise(exercise_data):
     """Add an exercise to the current workout."""
@@ -133,19 +134,15 @@ def log_exercise(exercise_data):
     finally:
         db.close()  # Ensure the database connection is closed
     
-
-def add_exercise(exercise_name):
+def start_workout(user_db_id):
+    "Workout entry"
     db = get_db_connection()
     cursor = db.cursor()
-
-    cursor.execute(          
-        "INSERT INTO exercises (name) VALUES (%s)", (exercise_name,)
+    cursor.execute(
+        "INSERT INTO workouts (user_id, start_time) VALUES (%s, NOW())",
+        (user_db_id,)
     )
     db.commit()
-    exercise_id = cursor.lastrowid
+    workout_id = cursor.lastrowid
     db.close()
-    return exercise_id
-
-
-
-
+    return workout_id
