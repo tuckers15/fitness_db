@@ -73,6 +73,19 @@ def get_db_connection():
         database=os.getenv("DB_NAME")
     )
 
+def get_exercises_from_workout(workout_id):
+    "Get list of exercises associated with workout_id"
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    query = "Select * FROM workouts_exercises WHERE id = %s"
+
+    cursor.execute(query, (workout_id))
+
+    result = cursor.fetchall()
+
+    db.close()
+    return result if result else "Workout ID Not Recognized"
 
 def get_exercise_id(exercise_name):
     "Getting exercise id"
@@ -98,6 +111,22 @@ def get_user_id(discord_id):
     result = cursor.fetchone()
     db.close()
     return result[0] if result else None
+
+def get_workouts_from_user(discord_id):
+    "Retrieving all workouts associated with given user"
+
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    user_id = get_user_id(discord_id)
+
+    cursor.execute(
+        "SELECT * FROM workouts WHERE user_id = %s", (user_id,)
+    )
+
+    result = cursor.fetchall()
+    db.close()
+    return result if result else None
 
 def insert_user(discord_id, discord_user):
     "Inserting a discord usert into database !join"
@@ -146,3 +175,4 @@ def start_workout(user_db_id):
     workout_id = cursor.lastrowid
     db.close()
     return workout_id
+
