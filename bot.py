@@ -11,7 +11,6 @@ intents.message_content = True  # Required for bot commands to work
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
-
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
@@ -122,7 +121,13 @@ async def log(ctx, exercise: str, sets_reps: str, weight: str):
     await ctx.send(f"Exercise: {exercise}\nSets: {sets}\nReps: {reps}\nWeight: {weight_value} lbs")
 
 
+@bot.command()
+async def my_workouts(ctx):
+    discord_id = ctx.author.id
 
+    output = db.get_workouts_from_user(discord_id)# TODO: digest this output
+
+    print(output) #just for testing in console
 
 
 
