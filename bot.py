@@ -17,51 +17,6 @@ async def on_ready():
 
 
 @bot.command()
-async def join(ctx):
-    discord_id = ctx.author.id
-    discord_user = ctx.author.name
-
-    # Check if the user already exists in the database
-    user_exists = db.check_user_exists(discord_id)
-
-    if user_exists:
-        await ctx.send(f"User {discord_user} already exists!")
-    else:
-        # If the user does not exist, insert them
-        user_id = db.insert_user(discord_id=discord_id, discord_user=discord_user)
-        await ctx.send(f"User added! User ID: {user_id}")
-
-
-@bot.command()
-async def show_workout(ctx, workout_id: int):
-    """Gets and outputs the individual exercises of a workout"""
-
-    output = db.get_workout_details(workout_id)
-
-    print(output)
-
-    await ctx.send(f"User: {output[0][0]} \nDate: {output[0][1]} \nExercises: {output[0][2]}")
-
-
-@bot.command()
-async def start_workout(ctx):
-    discord_id = ctx.author.id
-    user_db_id = db.get_user_id(discord_id)
-
-    active_workout = db.get_active_workout(user_db_id)
-
-    if user_db_id:
-        if active_workout:
-            await ctx.send(f"Workout already in session with ID:{active_workout}.")
-            await ctx.send("Please end current workout with '!end_workout' before starting another.")
-        else:
-            workout_id = db.start_workout(user_db_id)
-            await ctx.send(f"Workout started! ID: {workout_id}")
-    else:
-        await ctx.send("User not found. Please confirm registration status.")
-
-
-@bot.command()
 async def end_workout(ctx):
     discord_id = ctx.author.id
     user_db_id = db.get_user_id(discord_id)
@@ -75,7 +30,21 @@ async def end_workout(ctx):
             await ctx.send("No active workout found. Start one with '!start_workout'.")
     else:
         await ctx.send("User not recognized. Please confirm registration status.")
-    
+
+@bot.command()
+async def join(ctx):
+    discord_id = ctx.author.id
+    discord_user = ctx.author.name
+
+    # Check if the user already exists in the database
+    user_exists = db.check_user_exists(discord_id)
+
+    if user_exists:
+        await ctx.send(f"User {discord_user} already exists!")
+    else:
+        # If the user does not exist, insert them
+        user_id = db.insert_user(discord_id=discord_id, discord_user=discord_user)
+        await ctx.send(f"User added! User ID: {user_id}")
 
 @bot.command()
 async def log(ctx, exercise: str, sets_reps: str, weight: str):
@@ -143,6 +112,34 @@ async def my_workouts(ctx):
         length = workout[4] - workout[3]
 
         await ctx.send(f"ID: {workout[0]} Date: {workout[2]} Duration: {length}\n")
+
+@bot.command()
+async def show_workout(ctx, workout_id: int):
+    """Gets and outputs the individual exercises of a workout"""
+
+    output = db.get_workout_details(workout_id)
+
+    print(output)
+
+    await ctx.send(f"User: {output[0][0]} \nDate: {output[0][1]} \nExercises: {output[0][2]}")
+
+
+@bot.command()
+async def start_workout(ctx):
+    discord_id = ctx.author.id
+    user_db_id = db.get_user_id(discord_id)
+
+    active_workout = db.get_active_workout(user_db_id)
+
+    if user_db_id:
+        if active_workout:
+            await ctx.send(f"Workout already in session with ID:{active_workout}.")
+            await ctx.send("Please end current workout with '!end_workout' before starting another.")
+        else:
+            workout_id = db.start_workout(user_db_id)
+            await ctx.send(f"Workout started! ID: {workout_id}")
+    else:
+        await ctx.send("User not found. Please confirm registration status.")
 
 
 
