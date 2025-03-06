@@ -52,3 +52,19 @@ CREATE TABLE workouts_exercises (
     FOREIGN KEY (workout_id) REFERENCES workouts(id),
     FOREIGN KEY (exercise_id) REFERENCES exercises(id)
 );
+--@block updating workouts to use foreign id and cascade/restriction
+ALTER TABLE workouts
+ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE RESTRICT;
+--@block for show_workout()
+SELECT discord_user as 'Name',
+    DATE_FORMAT(workouts.date, '%m-%d-%y') as 'Date',
+    GROUP_CONCAT(exercises.name SEPARATOR ', ') as 'Exercises'
+FROM workouts
+    JOIN users ON users.id = workouts.user_id
+    JOIN workouts_exercises on workouts.id = workouts_exercises.workout_id
+    JOIN exercises on workouts_exercises.exercise_id = exercises.id
+WHERE workouts.id = 8
+GROUP BY workouts.id,
+    users.discord_user,
+    workouts.date
+ORDER BY workouts.date DESC;
