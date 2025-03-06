@@ -31,8 +31,11 @@ async def end_workout(ctx):
     else:
         await ctx.send("User not recognized. Please confirm registration status.")
 
+
 @bot.command()
 async def join(ctx):
+    """\t !join : join the databse, this is required before logging workouts or exercises \n"""
+
     discord_id = ctx.author.id
     discord_user = ctx.author.name
 
@@ -48,7 +51,7 @@ async def join(ctx):
 
 @bot.command()
 async def log(ctx, exercise: str, sets_reps: str, weight: str):
-    """Parses exercise logs, supporting both '4x8' and '4 8' formats for sets/reps."""
+    """!log (exercise) (sets)x(reps) (weight) : log exercise to active workout"""
 
     #Check that exercise exists
     #exercise_exists = db.check_exercise_exists(exercise_name=exercise)
@@ -103,6 +106,7 @@ async def log(ctx, exercise: str, sets_reps: str, weight: str):
 
 @bot.command()
 async def my_workouts(ctx):
+    """!my_workouts : returns a list of workouts associated with your discord account\n"""
     discord_id = ctx.author.id
 
     output = db.get_workouts_from_user(discord_id)# TODO: digest this output
@@ -115,7 +119,7 @@ async def my_workouts(ctx):
 
 @bot.command()
 async def show_workout(ctx, workout_id: int):
-    """Gets and outputs the individual exercises of a workout"""
+    """!show_workout (id) : returns details regarding the associated workout"""
 
     output = db.get_workout_details(workout_id)
 
@@ -126,6 +130,7 @@ async def show_workout(ctx, workout_id: int):
 
 @bot.command()
 async def start_workout(ctx):
+    """!start_workout : open a new workout """
     discord_id = ctx.author.id
     user_db_id = db.get_user_id(discord_id)
 
