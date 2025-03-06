@@ -112,6 +112,30 @@ def get_user_id(discord_id):
     db.close()
     return result[0] if result else None
 
+def get_workout_details(workout_id):
+    "Get detail row for workout"
+
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    query = """
+            SELECT users.discord_user AS Name,
+                   DATE_FORMAT(workouts.date, '%m-%d-%y') AS Date,
+                   GROUP_CONCAT(exercises.name SEPARATOR ', ') AS Exercises
+            FROM workouts
+            JOIN users ON users.id = workouts.user_id
+            JOIN workouts_exercises ON workouts.id = workouts_exercises.workout_id
+            JOIN exercises ON workouts_exercises.exercise_id = exercises.id
+            WHERE workouts.id = %s
+            GROUP BY workouts.id, users.discord_user, workouts.date
+            ORDER BY workouts.date DESC;
+        """
+    
+    cursor.execute(query, (workout_id,))
+    result = cursor.fetchall() #should only be one
+
+    return result
+
 def get_workouts_from_user(discord_id):
     "Retrieving all workouts associated with given user"
 
@@ -162,7 +186,7 @@ def log_exercise(exercise_data):
         print(f"Database error: {e}")  # Print or log the error
     finally:
         db.close()  # Ensure the database connection is closed
-    
+
 def start_workout(user_db_id):
     "Workout entry"
     db = get_db_connection()

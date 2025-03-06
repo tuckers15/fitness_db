@@ -33,6 +33,17 @@ async def join(ctx):
 
 
 @bot.command()
+async def show_workout(ctx, workout_id: int):
+    """Gets and outputs the individual exercises of a workout"""
+
+    output = db.get_workout_details(workout_id)
+
+    print(output)
+
+    await ctx.send(f"User: {output[0][0]} \nDate: {output[0][1]} \nExercises: {output[0][2]}")
+
+
+@bot.command()
 async def start_workout(ctx):
     discord_id = ctx.author.id
     user_db_id = db.get_user_id(discord_id)
@@ -127,7 +138,11 @@ async def my_workouts(ctx):
 
     output = db.get_workouts_from_user(discord_id)# TODO: digest this output
 
-    print(output) #just for testing in console
+    for workout in output:
+
+        length = workout[4] - workout[3]
+
+        await ctx.send(f"ID: {workout[0]} Date: {workout[2]} Duration: {length}\n")
 
 
 
