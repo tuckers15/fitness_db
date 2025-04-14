@@ -112,6 +112,22 @@ def get_user_id(discord_id):
     db.close()
     return result[0] if result else None
 
+def get_exercise_info(user_id, exercise_id):
+    "Gets details on specified exercise for active user"
+    db = get_db_connection()
+    cursor = db.cursor()
+    
+    #TODO write sum query
+
+    # write a query to get join exercises and workouts via exercise id, then filter to user_id and extract desired columns
+
+    query = """
+           
+                    
+
+        """
+
+
 def get_workout_details(workout_id):
     "Get detail row for workout"
 

@@ -123,7 +123,7 @@ async def show_workout(ctx, workout_id: int):
 
     output = db.get_workout_details(workout_id)
 
-    print(output)
+    print(output) #TODO: remove after testing
 
     await ctx.send(f"User: {output[0][0]} \nDate: {output[0][1]} \nExercises: {output[0][2]}")
 
